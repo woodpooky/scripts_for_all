@@ -27,7 +27,7 @@ comment_link = "https://reddit.com" #permalink received from API starts from /r/
 
 #Change this number to the # of days prior 
 #you want to start the search. Ex: 60= from 60 days ago
-period=50
+period=10
 
 
 #Gets the current time to be converted to epoch time and used as search period
@@ -100,9 +100,9 @@ def send_request(object_type,subreddit,keyword):
         return False
 
 def downloadFromUrl(object_type,subreddit,keyword):
-    print(f"Parsing {object_type}s now \n")
+    print(f"\nParsing {object_type}s now \n")
     print(f"Searching subreddit: /r/{subreddit}\n")
-    print(f"Searching comments containing: {keyword}")
+    print(f"Searching comments containing: {keyword}\n")
     
     #Sets the subreddit parameter in the base API URL call
     filter_string = f"subreddit={subreddit}"
@@ -176,32 +176,36 @@ for i, subreddit in enumerate(subreddits):
     api_timeout = send_request("comment",subreddit,"the")
   
     #Sets the condition for 5 retries on API timeout
-    while attempts<max_attempts:
-        #The code inside the try condition will retry until attempt==4
-        try:
-            #If the function did not receive a timeout. False was returned = continue
-            if not api_timeout:
-            
-                for keyword in search_terms:
-                    print(f"Current keyword is: {keyword} \n")
-            
-                    #The meat of the script. Passes the API endpoint type (comment or submission), subreddit, and search term to query
-                    downloadFromUrl("comment",subreddit,keyword)
-                    
-                    #time.sleep(1) 
-            else:
+    #while attempts<max_attempts:
+    #The code inside the try condition will retry until attempt==4
+    try:
+        #If the function did not receive a timeout. False was returned = continue
+        if not api_timeout:
+        
+            for keyword in search_terms:
+                print(f"\nCurrent keyword is: {keyword} \n")
+        
+                #The meat of the script. Passes the API endpoint type (comment or submission), subreddit, and search term to query
+                downloadFromUrl("comment",subreddit,keyword)
+                
+                
+                #time.sleep(1) 
+        elif attempts<max_attempts:
                 attempts+=1
                 print(f"\n API has timed out.\n Retrying /r/{subreddit} in 5 seconds \n")
                 #time to wait before retrying
                 time.sleep(5)
                 continue
-        except:
-            print("\n Something happened with the 'try' condition.\n")
-            print(traceback.format_exc())
+        
+        else:
+            print("API has timed out consecutively 5 times. Best to try again later.")
+            break
+    except:
+        print("\n Something happened with the 'try' condition.\n")
+        print(traceback.format_exc())
             
-    else:
-        print("API has timed out consecutively 5 times. Best to try again later.")
-        break
+   # else:
+
                
 
 
